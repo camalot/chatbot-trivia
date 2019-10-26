@@ -1,0 +1,246 @@
+{
+	"output_file": "settings.json",
+	"Command": {
+		"type": "textbox",
+		"label": "Command",
+		"value": "!trivia",
+		"tooltip": "The command for new trivia question.",
+		"group": "COMMANDS"
+	},
+	"Cooldown": {
+		"type": "slider",
+		"label": "Cooldown (seconds)",
+		"value": 30,
+		"min": 0,
+		"max": 600,
+		"ticks": 1,
+		"tooltip": "The cooldown for the 'new question' command",
+		"group": "COMMANDS"
+	},
+	"AnswerCommand": {
+		"type": "textbox",
+		"label": "Answer Command",
+		"value": "!answer",
+		"tooltip": "The command to answer questions.",
+		"group": "COMMANDS"
+	},
+	"OpenOverlayInBrowser": {
+		"type": "button",
+		"label": "OPEN OVERLAY IN BROWSER",
+		"tooltip": "Opens the overlay in browser for testing",
+		"function": "OpenOverlayInBrowser",
+		"wsevent": "EVENT_NONE",
+		"group": "COMMANDS"
+	},
+	"QuestionResponse": {
+		"type": "textbox",
+		"label": "Question Response",
+		"value": "::TRIVIA QUESTION:: CATEGORY: $triviacategory :: DIFFICULTY: $triviadifficulty :: POINTS: $triviapoints\\n$triviaquestion :: $triviaanswers Use $triviaanswercommand <number> to answer",
+		"tooltip": "The command to answer questions.",
+		"group": "RESPONSES"
+	},
+	"CorrectResponse": {
+		"type": "textbox",
+		"label": "Correct Response",
+		"value": "@$username -> You got the correct answer: '$triviacorrect' and have been awarded $triviapoints $currencyname.",
+		"tooltip": "Message to send on a correct answer to the trivia question",
+		"group": "RESPONSES"
+	},
+	"ClearResponse": {
+		"type": "textbox",
+		"label": "Clear Response",
+		"value": "@$username -> You have cleared the current trivia question. The correct answer was '$triviacorrect'.",
+		"tooltip": "Message to send when the current trivia question was cleared.",
+		"group": "RESPONSES"
+	},
+	"AlreadyAnsweredResponse": {
+		"type": "textbox",
+		"label": "Already Answered Response",
+		"value": "@$username -> You have already made an incorrect guess on the current question.",
+		"tooltip": "Message to send when a user tries to guess more than once.",
+		"group": "RESPONSES"
+	},
+	"IncorrectResponse": {
+		"type": "textbox",
+		"label": "Incorrect Response",
+		"value": "@$username -> That is not the correct answer.",
+		"tooltip": "Message to send when a user guesses incorrectly.",
+		"group": "RESPONSES"
+	},
+	"TimeoutResponse": {
+		"type": "textbox",
+		"label": "Answer Timeout Response",
+		"value": "No one got the correct answer. The correct answer was '$triviacorrect'.",
+		"tooltip": "Message to send when a user guesses incorrectly.\n$triviacorrect = The correct answer",
+		"group": "RESPONSES"
+	},
+	"UnknownAnswerResponse": {
+		"type": "textbox",
+		"label": "Unknown Answer Response",
+		"value": "@$username -> You should use $triviaanswercommand <number> to answer.",
+		"tooltip": "Message to send when a user guesses incorrectly.",
+		"group": "RESPONSES"
+	},
+	"QuestionCategory": {
+		"type": "dropdown",
+		"value": "Any",
+		"items": [
+			"Any",
+			"General Knowledge",
+			"Entertainment: Books",
+			"Entertainment: Cartoon & Animations",
+			"Entertainment: Comics",
+			"Entertainment: Film",
+			"Entertainment: Japanese Anime & Manga",
+			"Entertainment: Music",
+			"Entertainment: Musicals & Theatres",
+			"Entertainment: Television",
+			"Entertainment: Video Games",
+			"Entertainment: Board Games",
+			"Science & Nature",
+			"Science: Computers",
+			"Science: Gadgets",
+			"Science: Mathematics",
+			"Mythology",
+			"Sports",
+			"Geography",
+			"History",
+			"Politics",
+			"Art",
+			"Celebrities",
+			"Animals",
+			"Vehicles"
+		],
+		"label": "Question Category",
+		"tooltip": "Questions Category",
+		"group": "OPTIONS"
+	},
+	"QuestionDifficulty": {
+		"type": "dropdown",
+		"value": "Any",
+		"items": [
+			"Any",
+			"Easy",
+			"Medium",
+			"Hard"
+		],
+		"label": "Question Difficulty",
+		"tooltip": "Questions Difficulty",
+		"group": "OPTIONS"
+	},
+	"QuestionType": {
+		"type": "dropdown",
+		"value": "Any",
+		"items": [
+			"Any",
+			"Multiple Choice",
+			"True / False"
+		],
+		"label": "Question Difficulty",
+		"tooltip": "Questions Difficulty",
+		"group": "OPTIONS"
+	},
+	"TimeToAnswer": {
+		"type": "slider",
+		"value": 60,
+		"min": 0,
+		"max": 600,
+		"ticks": 1,
+		"label": "Time To Answer (seconds)",
+		"tooltip": "The amount of time people get to answer a question.",
+		"group": "OPTIONS"
+	},
+	"PointsEasy": {
+		"type": "slider",
+		"label": "Easy Difficulty",
+		"value": 100,
+		"min": 0,
+		"max": 10000,
+		"ticks": 1,
+		"tooltip": "The Number of points to award to the user for a easy difficulty question.",
+		"group": "AWARDED POINTS"
+	},
+	"PointsMedium": {
+		"type": "slider",
+		"label": "Medium Difficulty",
+		"value": 250,
+		"min": 0,
+		"max": 10000,
+		"ticks": 1,
+		"tooltip": "The Number of points to award to the user for a medium difficulty question.",
+		"group": "AWARDED POINTS"
+	},
+	"PointsHard": {
+		"type": "slider",
+		"label": "Hard Difficulty",
+		"value": 500,
+		"min": 0,
+		"max": 10000,
+		"ticks": 1,
+		"tooltip": "The Number of points to award to the user for a hard difficulty question.",
+		"group": "AWARDED POINTS"
+	},
+	"QuestionColor": {
+		"type": "colorpicker",
+		"label": "Question Color",
+		"value": "rgba(255, 255, 255, 1)",
+		"tooltip": "The color of the question.",
+		"group": "STYLE"
+	},
+	"AnswerColor": {
+		"type": "colorpicker",
+		"label": "Answers Color",
+		"value": "rgba(255, 255, 255, 1)",
+		"tooltip": "The color of the answers",
+		"group": "STYLE"
+	},
+	"UserColor": {
+		"type": "colorpicker",
+		"label": "User Color",
+		"value": "rgba(255, 0, 0, 1)",
+		"tooltip": "The color of the user that got the correct answer",
+		"group": "STYLE"
+	},
+	"HelpColor": {
+		"type": "colorpicker",
+		"label": "Help Color",
+		"value": "rgba(200, 200, 200, 1)",
+		"tooltip": "Color of the help text",
+		"group": "STYLE"
+	},
+	"CommandColor": {
+		"type": "colorpicker",
+		"label": "Command Color",
+		"value": "rgba(153, 74, 0, 1)",
+		"tooltip": "Color of the command in the help text.",
+		"group": "STYLE"
+	},
+	"OpenDonateLink": {
+		"type": "button",
+		"label": "Donate",
+		"tooltip": "Donate to support development",
+		"function": "OpenDonateLink",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenFollowOnTwitchLink": {
+		"type": "button",
+		"label": "Follow Me On Twitch",
+		"tooltip": "Get Medal",
+		"function": "OpenFollowOnTwitchLink",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenReadMeLink": {
+		"type": "button",
+		"label": "Open ReadMe",
+		"tooltip": "Open ReadMe file",
+		"function": "OpenReadMeLink",
+		"wsevent": "EVENT_NONE"
+	},
+	"OpenScriptUpdater": {
+		"type": "button",
+		"label": "Check For Updates",
+		"tooltip": "Check for updates",
+		"function": "OpenScriptUpdater",
+		"wsevent": "EVENT_NONE"
+	}
+}

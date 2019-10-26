@@ -1,0 +1,175 @@
+:root {
+	--question-color: rgba(255, 255, 255, 1);
+	--answer-color: rgba(255, 255, 255, 1);
+	--user-color: rgba(255, 255, 255, 1);
+	--help-color:  rgba(200, 200, 200, 1);
+	--command-color:  rgba(153, 74, 0, 1);
+
+}
+
+html {
+	margin:0;
+	padding:0;
+}
+
+body {
+	color: var(--question-color, rgba(255, 255, 255, 1));
+	font-size: 3vh;
+	background-color: #000;
+
+	width:100vw;
+	height:100vh;
+	margin:0;
+	padding:0;
+
+	-webkit-box-sizing: content-box;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+	border: none;
+	font-size: 76px/1;
+	font-weight: bold;
+	font-family: bangers, sans-serif;
+	text-align: center;
+	-o-text-overflow: ellipsis;
+	text-overflow: ellipsis;
+	letter-spacing: 3px;
+
+	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: hidden;
+}
+
+#config-messages {
+	bottom: 0;
+	top: 0;
+	left: 0;
+	right: 0;
+	position: absolute;
+	background-color: red;
+	color: white;
+	font-size: 4vh;
+	font-weight: bold;
+	text-align: left;
+	font-family: Arial, Helvetica, sans-serif;
+	padding: 10px;
+}
+#config-messages header {
+	text-align: center;
+	margin: 2vh 0 5vh 0;
+}
+#config-messages div.group {
+	margin: 0 0 5vh 0;
+}
+
+
+.hidden {
+	display: none;
+}
+
+* {
+	vertical-align: middle;
+}
+
+.trivia {
+	margin-top: 10px;
+}
+
+.trivia .question {
+	color: var(--question-color, rgba(255, 255, 255, 1));
+	font-weight: bold;
+	font-size: 3em;
+	line-height: 1em;
+	padding: 0;
+	margin: 0;
+}
+
+.trivia .category {
+	text-align: center;
+	font-weight: bold;
+	font-size: 3em;
+	line-height: 2em;
+	padding: 0;
+	margin: 0;
+	display: none;
+}
+
+.trivia .answers {
+	padding-left: 80px;
+	margin-left: 0px;
+	text-align: left;
+	color: var(--answers-color, rgba(255, 255, 255, 1));
+
+}
+
+.trivia .answers li {
+	text-align: left;
+	font-size: 2.2em;
+	line-height: 1em;
+}
+
+.trivia .help {
+	text-align: center;
+	color: var(--help-color, rgba(200, 200, 200, 1));
+	font-size: 2em;
+	margin-top: 30px;
+}
+
+.trivia .help code {
+	padding: 0 10px 0 10px;
+	margin: 0;
+	color: var(--command-color, rgba(153, 74, 0, 1));
+}
+
+.trivia .progress {
+	width: 100%;
+	height: 5px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	background-color: #555;
+	margin-bottom: 10px;
+
+}
+
+
+.trivia .progress .bar {
+	width: 100%;
+	height: 5px;
+	display: inline-block;
+}
+
+.trivia .progress .bar.good {
+	background-color: rgb(0, 78, 0);
+}
+.trivia .progress .bar.warn {
+	background-color: rgb(153, 74, 0);
+}
+
+.trivia .progress .bar.hurry {
+	background-color: rgb(150, 0, 0);
+}
+
+.correct {
+
+}
+
+.no-answer .message,
+.correct .message {
+	text-align: center;
+	font-size: 3.3em;
+	line-height: 1em;
+}
+
+.correct .who {
+	color: var(--user-color, rgba(255, 0, 0, 1));
+}
+
+.no-answer .answer,
+.correct .answer {
+	margin-top: 5px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 3em;
+	line-height: 1.1em;
+}
