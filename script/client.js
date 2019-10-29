@@ -1,7 +1,7 @@
 "use strict";
 let animationEndClasses = "webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend";
 
-if (!settings) {
+if (!window.settings) {
 	window.settings = {};
 }
 
@@ -9,11 +9,13 @@ window.settings = { ...window.DEFAULT_SETTINGS, ...window.settings };
 var TimeoutPointer = null;
 
 function initializeUI() {
+	console.log(`color: ${settings.AnswerColor}`);
 	$(":root")
 		.css("--question-color", `${settings.QuestionColor || "rgba(255, 255, 255, 1)"}`)
-		.css("--answer-color", `${settings.AnswerColor || "rgba(255, 255, 255, 1)"}`)
+		.css("--answers-color", `${settings.AnswerColor || "rgba(255, 255, 255, 1)"}`)
 		.css("--user-color", `${settings.UserColor || "rgba(255, 0, 0, 1)"}`)
 		.css("--help-color", `${settings.HelpColor || "rgba(200, 200, 200, 1)"}`)
+		.css("--background-color", `${settings.BackgroundColor || "rgba(0, 0, 0, 0)"}`)
 		.css("--command-color", `${settings.CommandColor || "rgba(153, 74, 0, 1)"}`);
 }
 
@@ -36,7 +38,8 @@ function connectWebsocket() {
 				"EVENT_TRIVIA_SETTINGS",
 				"EVENT_TRIVIA_QUESTION",
 				"EVENT_TRIVIA_TIMEOUT",
-				"EVENT_TRIVIA_ANSWERED"
+				"EVENT_TRIVIA_ANSWERED",
+				"EVENT_TRIVIA_CLEAR"
 			]
 		};
 
@@ -62,20 +65,24 @@ function connectWebsocket() {
 				}
 				console.log(eventData);
 				showQuestion(eventData);
-				TimeoutPointer = setTimeout(hideAll, settings.TimeToAnswer*1000);
 				break; 
 			case "EVENT_TRIVIA_TIMEOUT":
 				if (TimeoutPointer !== null) {
 					clearTimeout(TimeoutPointer);
 				}
 				questionTimeout(eventData);
-				TimeoutPointer = setTimeout(hideAll, 10 * 1000);
 				break;
 			case "EVENT_TRIVIA_ANSWERED":
 				if (TimeoutPointer !== null) {
 					clearTimeout(TimeoutPointer);
 				}
 				questionAnswered(eventData);
+				break;
+				case "EVENT_TRIVIA_CLEAR":
+				if (TimeoutPointer !== null) {
+					clearTimeout(TimeoutPointer);
+				}
+
 				TimeoutPointer = setTimeout(hideAll, 10 * 1000);
 				break;
 			case "EVENT_TRIVIA_SETTINGS":

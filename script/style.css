@@ -1,10 +1,10 @@
 :root {
 	--question-color: rgba(255, 255, 255, 1);
-	--answer-color: rgba(255, 255, 255, 1);
+	--answers-color: rgba(255, 255, 255, 1);
 	--user-color: rgba(255, 255, 255, 1);
-	--help-color:  rgba(200, 200, 200, 1);
-	--command-color:  rgba(153, 74, 0, 1);
-
+	--help-color: rgba(200, 200, 200, 1);
+	--command-color: rgba(153, 74, 0, 1);
+	--background-color: rgba(0,0,0,0);
 }
 
 html {
@@ -15,7 +15,7 @@ html {
 body {
 	color: var(--question-color, rgba(255, 255, 255, 1));
 	font-size: 3vh;
-	background-color: #000;
+	background-color: var(--background-color, rgba(0,0,0,0));
 
 	width:100vw;
 	height:100vh;
@@ -97,7 +97,7 @@ body {
 	padding-left: 80px;
 	margin-left: 0px;
 	text-align: left;
-	color: var(--answers-color, rgba(255, 255, 255, 1));
+	color: var(--answers-color, rgba(177, 36, 36, 1));
 
 }
 
@@ -105,6 +105,7 @@ body {
 	text-align: left;
 	font-size: 2.2em;
 	line-height: 1em;
+	color: var(--answers-color, rgba(177, 36, 36, 1));
 }
 
 .trivia .help {
@@ -172,4 +173,5 @@ body {
 	font-weight: bold;
 	font-size: 3em;
 	line-height: 1.1em;
+	color: var(--answers-color, rgba(255, 255, 255, 1));
 }

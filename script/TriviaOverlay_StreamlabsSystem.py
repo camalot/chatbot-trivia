@@ -44,9 +44,7 @@ Initialized = False
 CurrentQuestion = None
 CurrentAnswers = list([])
 CorrectIndex = -1
-AllowAnswers = True
 KnownBots = None
-StopTimeout = False
 AnsweredCorrect = False
 
 
@@ -95,7 +93,6 @@ CATEGORIES = [
 class TriviaQuestion(object):
     def __init__(self, jsonData):
         try:
-            seed()
             self.category = "Unknown"
             self.type = "none"
             self.difficulty = "none"
@@ -139,6 +136,14 @@ class Settings(object):
             self.PointsMedium = 250
             self.PointsHard = 500
             self.TimeToAnswer = 60
+
+            self.BackgroundColor = "rgba(0, 0, 0, 0)"
+            self.CommandColor = "rgba(153, 74, 0, 1)"
+            self.HelpColor = "rgba(200, 200, 200, 1)"
+            self.UserColor = "rgba(255, 0, 0, 1)"
+            self.AnswerColor = "rgba(255, 255, 255, 1)"
+            self.QuestionColor = "rgba(255, 255, 255, 1)"
+
             self.TimeoutResponse = "No one got the correct answer. The correct answer was '$triviacorrect'."
             self.UnknownAnswerResponse = "@$username -> You should use $triviaanswercommand <number> to answer."
             self.IncorrectResponse = "@$username -> That is not the correct answer."
@@ -167,7 +172,7 @@ def Init():
     if Initialized:
         Parent.Log(ScriptName, "Skip Initialization. Already Initialized.")
         return
-
+    seed()
     Parent.Log(ScriptName, "Initialize")
 
     if KnownBots is None:
@@ -186,7 +191,6 @@ def Init():
 
 def Unload():
     global Initialized
-    ClearCurrentQuestion()
     Initialized = False
     return
 
@@ -203,27 +207,19 @@ def Execute(data):
                 subCommand = data.GetParam(1).lower()
                 if Parent.HasPermission(data.User, "Moderator", ""):
                     if subCommand == "clear":
-                        Parent.SendTwitchMessage(Parse(ScriptSettings.ClearResponse, data.UserName, data.User, data.Message))
+                        Parent.SendTwitchMessage(
+                            Parse(ScriptSettings.ClearResponse, data.User, data.UserName, "", data.Message))
                         ClearCurrentQuestion()
                 else:
                     pass
             else:
-                if not Parent.IsOnCooldown(ScriptName, commandTrigger):
-                    if CurrentQuestion is None:
-                        GetNewQuestion()
-                    Parent.AddCooldown(ScriptName, commandTrigger, ScriptSettings.Cooldown)
-                    SendQuestionEvent()
-                    if ScriptSettings.TimeToAnswer > 0:
-                        Parent.Log(ScriptName, "Setup Timeout Thread")
-                        # Start a new thread to timeout the question
-                        threading.Thread(target=QuestionTimeout, args=(CurrentQuestion, ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
-                        Parent.Log(ScriptName, "After Thread Start")
-                    Parent.SendTwitchMessage(Parse(ScriptSettings.QuestionResponse, data.UserName, data.User, data.Message))
-        elif CurrentQuestion is not None and commandTrigger == ScriptSettings.AnswerCommand and AllowAnswers:
+                TriggerQuestionFromUser(data.User, data.UserName)
+        elif CurrentQuestion is not None and commandTrigger == ScriptSettings.AnswerCommand:
             # check if they already answered
             if data.User in CurrentAnswers:
                 # ignore since they already answered.
-                Parent.SendTwitchMessage(Parse(ScriptSettings.AlreadyAnsweredResponse, data.UserName, data.User, data.Message))
+                Parent.SendTwitchMessage(Parse(
+                    ScriptSettings.AlreadyAnsweredResponse, data.User, data.UserName, "", data.Message))
                 return
             # Someone is answering a trivia question.
             if data.GetParamCount() > 1:
@@ -240,13 +236,14 @@ def Execute(data):
                             # Apply Points
                             Parent.AddPoints(data.User, data.UserName, CurrentQuestion.points)
                             # Tell Chat
-                            Parent.SendTwitchMessage(Parse(ScriptSettings.CorrectResponse, data.UserName, data.User, data.Message))
+                            Parent.SendTwitchMessage(Parse(ScriptSettings.CorrectResponse, data.User, data.UserName, "", data.Message))
                             SendQuestionAnsweredEvent(data.UserName)
                             ClearCurrentQuestion()
+                            SendQuestionClearEvent()
                         else:
-                            Parent.SendTwitchMessage(Parse(ScriptSettings.IncorrectResponse, data.UserName, data.User, data.Message))
+                            Parent.SendTwitchMessage(Parse(ScriptSettings.IncorrectResponse, data.User, data.UserName, "", data.Message))
                 else:
-                    Parent.SendTwitchMessage(Parse(ScriptSettings.UnknownAnswerResponse, data.UserName, data.User, data.Message))
+                    Parent.SendTwitchMessage(Parse(ScriptSettings.UnknownAnswerResponse, data.User, data.UserName, "", data.Message))
                     return
             else:
                 return
@@ -271,10 +268,10 @@ def ReloadSettings(jsondata):
     return
 
 
-def Parse(parseString, user, target, message):
+def Parse(parseString, userid, username, target, message):
     resultString = parseString
-    resultString = resultString.replace("$username", user)
-    resultString = resultString.replace("$userid", target)
+    resultString = resultString.replace("$username", username)
+    resultString = resultString.replace("$userid", userid)
     resultString = resultString.replace(
         "$currencyname", Parent.GetCurrencyName())
     resultString = resultString.replace(
@@ -328,8 +325,7 @@ def unescapeHtml(s):
     h = HTMLParser()
     return h.unescape(s.strip())
 
-def QuestionTimeout(currentQuestion, seconds, timeoutResponse):
-    # global AllowAnswers
+def QuestionTimeoutThread(currentQuestion, seconds, timeoutResponse):
     global AnsweredCorrect
     # Parent.Log(ScriptName, "TIME OUT: THREAD START")
     counter = 0
@@ -337,22 +333,19 @@ def QuestionTimeout(currentQuestion, seconds, timeoutResponse):
         time.sleep(1)
         counter += 1
 
-    # AllowAnswers = False
-    # Parent.Log(ScriptName, "TIME OUT: NOTIFY")
     if currentQuestion and not AnsweredCorrect:
         SendQuestionTimeoutEvent()
-
-    counter = 0
-    while counter < 10 and currentQuestion is not None and not AnsweredCorrect:
-        time.sleep(1)
-        counter += 1
-    if not AnsweredCorrect:
         if timeoutResponse:
-            Parent.SendTwitchMessage(timeoutResponse.replace(
-                "$triviacorrect", unescapeHtml(currentQuestion.correct_answer)))
+            Parent.SendTwitchMessage(timeoutResponse.replace("$triviacorrect", unescapeHtml(currentQuestion.correct_answer)))
+
+
+    if not AnsweredCorrect:
         ClearCurrentQuestion()
-    # AllowAnswers = True
+        SendQuestionClearEvent()
+
     return
+
+
 
 def GetItemIdFromName(lst, name):
     iid = [item['id'] for item in lst if item['name'] == name]
@@ -378,11 +371,9 @@ def GetChatFormattedAnswers(answers):
 def ClearCurrentQuestion():
     global CurrentQuestion
     global CurrentAnswers
-    global AllowAnswers
-    AllowAnswers = True
+    global ScriptName
     CurrentAnswers = None
     CurrentQuestion = None
-    SendQuestionEvent()
 
 def GetApiUrl():
     cat = GetItemIdFromName(CATEGORIES, ScriptSettings.QuestionCategory)
@@ -396,10 +387,8 @@ def GetApiUrl():
 def GetNewQuestion():
     global CurrentQuestion
     global CurrentAnswers
-    global AllowAnswers
     global AnsweredCorrect
     AnsweredCorrect = False
-    AllowAnswers = True
     resp = json.loads(Parent.GetRequest(GetApiUrl(), {}))['response']
     CurrentQuestion = TriviaQuestion(resp)
     CurrentAnswers = list([])
@@ -409,26 +398,51 @@ def SendSettingsEvent():
 
 
 def SendQuestionEvent():
+    global CurrentQuestion
     if CurrentQuestion is not None:
         Parent.BroadcastWsEvent("EVENT_TRIVIA_QUESTION", json.dumps(CurrentQuestion.__dict__))
     else:
-        Parent.BroadcastWsEvent("EVENT_TRIVIA_QUESTION",json.dumps(None))
+        Parent.BroadcastWsEvent("EVENT_TRIVIA_QUESTION", json.dumps(None))
+
 def SendQuestionTimeoutEvent():
+    global CurrentQuestion
     if CurrentQuestion is not None:
         Parent.BroadcastWsEvent("EVENT_TRIVIA_TIMEOUT", json.dumps({
             "answer": CurrentQuestion.correct_answer
         }))
 
 
+def SendQuestionClearEvent():
+    Parent.BroadcastWsEvent("EVENT_TRIVIA_CLEAR", json.dumps(None))
+
+
 def SendQuestionAnsweredEvent(user):
-    global StopTimeout
-    StopTimeout = True
+    global CurrentQuestion
     if CurrentQuestion is not None:
         Parent.BroadcastWsEvent("EVENT_TRIVIA_ANSWERED", json.dumps({
             "user": user,
             "answer": CurrentQuestion.correct_answer
         }))
 
+def TriggerQuestionFromUser(userid, username):
+    if not Parent.IsOnCooldown(ScriptName, ScriptSettings.Command):
+        if CurrentQuestion is None:
+            GetNewQuestion()
+        Parent.AddCooldown(ScriptName, ScriptSettings.Command, ScriptSettings.Cooldown)
+        SendQuestionEvent()
+        if ScriptSettings.TimeToAnswer > 0:
+            # Start a new thread to timeout the question
+            threading.Thread(target=QuestionTimeoutThread, args=(
+                CurrentQuestion, ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
+        Parent.SendTwitchMessage(Parse(ScriptSettings.QuestionResponse, userid, username, "", ""))
+
+
+def TriggerQuestion():
+    TriggerQuestionFromUser(Parent.GetChannelName().lower(), Parent.GetChannelName())
+
+def ClearQuestion():
+    Parent.SendTwitchMessage(Parse(ScriptSettings.ClearResponse, Parent.GetChannelName().lower(), Parent.GetChannelName(), "", ""))
+    ClearCurrentQuestion()
 
 def OpenScriptUpdater():
     currentDir = os.path.realpath(os.path.dirname(__file__))

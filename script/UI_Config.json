@@ -32,6 +32,22 @@
 		"wsevent": "EVENT_NONE",
 		"group": "COMMANDS"
 	},
+	"TriggerQuestion": {
+		"type": "button",
+		"label": "Start Question",
+		"tooltip": "Starts a new question",
+		"function": "TriggerQuestion",
+		"wsevent": "EVENT_NONE",
+		"group": "COMMANDS"
+	},
+	"ClearQuestion": {
+		"type": "button",
+		"label": "Clear Question",
+		"tooltip": "Clear current question",
+		"function": "ClearQuestion",
+		"wsevent": "EVENT_NONE",
+		"group": "COMMANDS"
+	},
 	"QuestionResponse": {
 		"type": "textbox",
 		"label": "Question Response",
@@ -213,6 +229,13 @@
 		"label": "Command Color",
 		"value": "rgba(153, 74, 0, 1)",
 		"tooltip": "Color of the command in the help text.",
+		"group": "STYLE"
+	},
+	"BackgroundColor": {
+		"type": "colorpicker",
+		"label": "Background Color",
+		"value": "rgba(0, 0, 0, 0)",
+		"tooltip": "The background color of the page. You should remove the 'default css' in OBS if you want to use this background",
 		"group": "STYLE"
 	},
 	"OpenDonateLink": {

@@ -20,5 +20,6 @@ var DEFAULT_SETTINGS = {
 	"AnswerColor": "rgba(255, 255, 255, 1)",
 	"UserColor": "rgba(255, 0, 0, 1)",
 	"HelpColor": "rgba(200, 200, 200, 1)",
-	"CommandColor": "rgba(153, 74, 0, 1)"
+	"CommandColor": "rgba(153, 74, 0, 1)",
+	"BackgroundColor": "rgba(0, 0, 0, 0)"
 };
