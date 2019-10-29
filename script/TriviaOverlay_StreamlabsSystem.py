@@ -104,9 +104,10 @@ class TriviaQuestion(object):
             if resp['response_code'] == 0 and len(resp['results']) > 0:
                 result = resp['results'][0]
                 self.__dict__.update(result)
-                Parent.Log(ScriptName, "LEN: " + str(len(self.incorrect_answers)))
+                numberOfAnswers = len(self.incorrect_answers)
+                Parent.Log(ScriptName, "LEN: " + str(numberOfAnswers))
                 self.answers = self.incorrect_answers[:]
-                position = randrange(len(self.incorrect_answers)+1)
+                position = randrange(numberOfAnswers + 1)
                 self.correct_index = position
                 Parent.Log(ScriptName, "Correct: " + str(self.correct_index))
                 Parent.Log(ScriptName, "Correct: " + str(self.correct_answer))
@@ -178,7 +179,7 @@ def Init():
     if KnownBots is None:
         botData = json.loads(json.loads(Parent.GetRequest(
             "https://api.twitchinsights.net/v1/bots/online", {}))['response'])['bots']
-        KnownBots = [bot[0] for bot in botData]
+        KnownBots = [bot[0].lower() for bot in botData]
     # Load saved settings and validate values
     ScriptSettings = Settings(SettingsFile)
 
@@ -305,7 +306,7 @@ def Parse(parseString, userid, username, target, message):
 
 
 def IsTwitchBot(user):
-    return user in KnownBots
+    return user.lower() in KnownBots
 
 
 def str2bool(v):
