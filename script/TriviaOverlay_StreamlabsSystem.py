@@ -525,3 +525,6 @@ def OpenOverlayInBrowser():
     os.startfile(os.path.realpath(os.path.join(
         os.path.dirname(__file__), "overlay.html")))
     return
+def OpenDiscordLink():
+    os.startfile("https://discord.com/invite/vzdpjYk")
+    return
