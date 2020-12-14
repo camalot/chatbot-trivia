@@ -1,0 +1,274 @@
+:root {
+	--trivia-container-width: 80%;
+
+	--trivia-correct-border-color: #33f;
+	--trivia-correct-background-color: #3f3;
+	--trivia-correct-text-color: #333;
+	--trivia-answer-border-color: #f33;
+	--trivia-answer-background-color: #333;
+	--trivia-answer-text-color: #aaa;
+	--trivia-question-background-color: #333;
+	--trivia-question-border-color: #f33;
+	--trivia-question-text-color: #aaa;
+	--trivia-question-category-color: #3ff;
+	--trivia-difficulty-background-color: #f33;
+	--trivia-difficulty-text-color: #333;
+
+	--trivia-font-family: days-one;
+	--trivia-margin-top: 105px;
+	--trivia-opacity: 0.9;
+
+	--trivia-timeout: 60s;
+}
+
+
+body, html {
+	margin: 0;
+	padding: 0;
+	font-size: 3vh;
+
+	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: hidden;
+
+	font-size: 76px/1;
+	font-weight: bold;
+	font-family: var(--trivia-font-family, days-one), sans-serif;
+	-o-text-overflow: ellipsis;
+	text-overflow: ellipsis;
+	letter-spacing: 3px;
+	opacity: var(--trivia-opacity, 1);
+}
+
+
+#config-messages {
+	bottom: 0;
+	top: 0;
+	left: 0;
+	right: 0;
+	position: absolute;
+	background-color: red;
+	color: white;
+	font-size: 4vh;
+	font-weight: bold;
+	text-align: left;
+	font-family: Arial, Helvetica, sans-serif;
+	padding: 10px;
+}
+#config-messages header {
+	text-align: center;
+	margin: 2vh 0 5vh 0;
+}
+#config-messages div.group {
+	margin: 0 0 5vh 0;
+}
+
+
+.debug {
+	position: absolute;
+}
+
+.debug,
+.hidden {
+	display: none;
+}
+
+#triva-host {
+}
+
+.trivia {
+	margin: auto;
+	width: var(--trivia-container-width, 80%);
+	margin-top: var(--trivia-margin-top, 0);
+}
+
+.trivia .progress {
+	display: inline-block;
+	height: 24px;
+	width: 100%;
+	margin: 5px 0 0 0;
+}
+
+.trivia .progress .fill {
+	display: inline-block;
+	height: 24px;
+	width: 0%;
+	animation-name: timeout-progress;
+	animation-duration: var(--trivia-timeout, 60s);
+	animation-direction: reverse;
+	animation-timing-function:linear;
+}
+
+.trivia.closed .progress {
+	display: none;;
+}
+
+.question {
+	position: relative;
+	width: 100% - 40px;
+
+	margin: 0;
+	background: var(--trivia-question-background-color, #333);
+	/* border-radius: 50% / 25%; */
+	color: var(--trivia-question-text-color, #aaa);
+	text-align: center;
+	text-indent: .1em;
+	padding: 10px 30px 10px 30px;
+	border: 4px solid var(--trivia-question-border-color, #f33);
+	border-bottom-width: 0;
+	clear: both;
+	padding-top: 1.2em;
+	padding-bottom: 1.2em;
+}
+
+.question .difficulty {
+	display: block;
+	background-color: var(--trivia-difficulty-background-color, #f33);
+	color: var(--trivia-difficulty-text-color, #aaa);
+	left: 0;
+	top: 0;
+	min-width: 200px;
+	position: absolute;
+	text-align: center;
+	text-transform: uppercase;
+	border-bottom-right-radius: 25px;
+}
+
+.question .points {
+	clear: both;
+	display: block;
+	background-color: var(--trivia-difficulty-background-color, #f33);
+	color: var(--trivia-difficulty-text-color, #333);
+	right: 0;
+	bottom: 0;
+	min-width: 200px;
+	position: absolute;
+	text-align: center;
+	text-transform: uppercase;
+	border-top-left-radius: 25px;
+}
+
+.question .points::after {
+	content: 'pts';
+}
+
+.question .text {
+	color: var(--trivia-question-text-color, #aaa);
+}
+
+.question .category {
+	color: var(--trivia-question-category-color, #3ff);
+}
+
+.answers ol {
+	display: inline-block;
+	position: relative;
+	width: 100%;
+	text-align: center;
+	padding: 0;
+	margin: 0;
+	list-style-type: upper-roman;
+}
+
+.answers ol li {
+	display: inline-block;
+	margin: 10px;
+	min-width: 40%;
+	max-width: 100%;
+	background: var(--trivia-answer-background-color, #333);
+	/* border-radius: 50% / 20%; */
+	color: var(--trivia-answer-text-color, #aaa);
+	text-align: center;
+	text-indent: .1em;
+	padding: 20px;
+	border: 4px solid var(--trivia-answer-border-color, #f33);
+}
+
+.answers ol li .n {
+	float: left;
+	text-transform: uppercase;
+	font-weight: bold;
+}
+
+.trivia.closed .answers ol li.correct {
+	border-color: var(--trivia-correct-border-color, #33f);
+	background-color: var(--trivia-correct-background-color, #33f);
+	color: var(--trivia-correct-text-color, #333);
+	font-weight: bold;
+	animation: trivia-closed .5s 3; 
+}
+
+.trivia .help {
+	/* <div class="help">Use <code><span id="answer-command"></span> #</code> to guess.</div> */
+	text-align: center;
+	background: var(--trivia-question-background-color, #333);
+	color: var(--trivia-question-text-color, #aaa);
+	padding: 5px 0 5px 0;
+	border: 4px solid var(--trivia-question-border-color, #f33);
+	border-top-width: 1px;
+	text-transform: uppercase;
+	font-style: oblique;
+}
+
+.trivia .reset-help code,
+.trivia .help code {
+	text-transform: lowercase;
+	color: #f33;
+}
+
+.trivia.closed .help {
+	display: none;
+}
+
+.trivia .result {
+	text-align: center;
+	background: var(--trivia-question-background-color, #333);
+	color: var(--trivia-question-text-color, #aaa);
+	padding: 5px 0 5px 0;
+	border: 4px solid var(--trivia-question-border-color, #f33);
+	border-top-width: 1px;
+	text-transform: uppercase;
+	font-style: oblique;
+	display: none;
+}
+.trivia.closed .result {
+	display: block;
+}
+
+@-webkit-keyframes timeout-progress {
+	100% {
+		display: inline-block;
+		width: 100%;
+		background-color: #33ff33;
+	}
+	75% {
+		width: 75%;
+		background-color: rgb(255, 255, 0);
+	}
+	50% {
+		width: 50%;
+		background-color: rgb(255, 165, 0);
+	}
+	25% {
+		width: 25%;
+		background-color: rgb(255, 51, 51);
+	}
+	0% {
+		width: 0%;
+		background-color: rgb(255, 51, 51);
+		display: none;
+	}
+}
+
+@-webkit-keyframes trivia-closed {
+  0%, 49% {
+		border-color: var(--trivia-answer-border-color, #33f);
+		background-color: var(--trivia-answer-background-color, #33f);
+		color: var(--trivia-answer-text-color, #aaa);
+  }
+  50%, 100% {
+		border-color: var(--trivia-correct-border-color, #33f);
+		background-color: var(--trivia-correct-background-color, #33f);
+		color: var(--trivia-correct-text-color, #333);
+  }
+}

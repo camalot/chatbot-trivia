@@ -19,6 +19,8 @@ import shutil
 import tempfile
 from HTMLParser import HTMLParser
 import argparse
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 clr.AddReference("IronPython.SQLite.dll")
 clr.AddReference("IronPython.Modules.dll")
@@ -35,8 +37,8 @@ Version = "1.0.0-snapshot"
 Repo = "camalot/chatbot-trivia"
 ReadMeFile = "https://github.com/" + Repo + "/blob/develop/ReadMe.md"
 
-SettingsFile = os.path.join(os.path.dirname(
-    os.path.realpath(__file__)), "settings.json")
+UIConfigFile = os.path.join(os.path.dirname(__file__), "UI_Config.json")
+SettingsFile = os.path.join(os.path.dirname(os.path.realpath(__file__)), "settings.json")
 ScriptSettings = None
 Initialized = False
 CurrentQuestion = None
@@ -44,7 +46,8 @@ CurrentAnswers = list([])
 CorrectIndex = -1
 KnownBots = None
 AnsweredCorrect = False
-
+RunningThread = None
+Logger = None
 
 API_URL = "https://opentdb.com/api.php?amount=1&category={0}&difficulty={1}&type={2}"
 
@@ -103,20 +106,22 @@ class TriviaQuestion(object):
                 result = resp['results'][0]
                 self.__dict__.update(result)
                 numberOfAnswers = len(self.incorrect_answers)
-                Parent.Log(ScriptName, "LEN: " + str(numberOfAnswers))
+                Logger.debug("LEN: " + str(numberOfAnswers))
                 self.answers = self.incorrect_answers[:]
+
+                # Shouldnt shift if question type is boolean. it should be [true,false]
                 position = randrange(numberOfAnswers + 1)
                 self.correct_index = position
-                Parent.Log(ScriptName, "Correct: " + str(self.correct_index))
-                Parent.Log(ScriptName, "Correct: " + str(self.correct_answer))
-                Parent.Log(ScriptName, "answers: " + json.dumps(self.answers))
+                Logger.debug("Correct: " + str(self.correct_index))
+                Logger.debug("Correct: " + str(self.correct_answer))
+                Logger.debug("answers: " + json.dumps(self.answers))
                 self.answers.insert(position, self.correct_answer)
                 self.points = GetPointsForDifficulty(self.difficulty)
-                Parent.Log(ScriptName, "answers: " + json.dumps(self.answers))
+                Logger.debug("answers: " + json.dumps(self.answers))
             else:
                 raise Exception("Unable to load trivia question.")
         except Exception as e:
-            Parent.Log(ScriptName, str(e))
+            Logger.error(str(e))
 
 
 class Settings(object):
@@ -124,55 +129,95 @@ class Settings(object):
 
     def __init__(self, settingsfile=None):
         """ Load in saved settings file if available else set default values. """
+        defaults = self.DefaultSettings(UIConfigFile)
         try:
-            self.Command = "!trivia"
-            self.AnswerCommand = "!answer"
-            self.Cooldown = 30
-            self.QuestionCategory = "Any"
-            self.QuestionDifficulty = "Any"
-            self.QuestionType = "Any"
-            self.PointsEasy = 100
-            self.PointsMedium = 250
-            self.PointsHard = 500
-            self.TimeToAnswer = 60
-
-            self.BackgroundColor = "rgba(0, 0, 0, 0)"
-            self.CommandColor = "rgba(153, 74, 0, 1)"
-            self.HelpColor = "rgba(200, 200, 200, 1)"
-            self.UserColor = "rgba(255, 0, 0, 1)"
-            self.AnswerColor = "rgba(255, 255, 255, 1)"
-            self.QuestionColor = "rgba(255, 255, 255, 1)"
-
-            self.TimeoutResponse = "No one got the correct answer. The correct answer was '$triviacorrect'."
-            self.UnknownAnswerResponse = "@$username -> You should use $triviaanswercommand <number> to answer."
-            self.IncorrectResponse = "@$username -> That is not the correct answer."
-            self.AlreadyAnsweredResponse = "@$username -> You have already made an incorrect guess on the current question."
-            self.ClearResponse = "@$username -> You have cleared the current trivia question. The correct answer was '$triviacorrect'."
-            self.CorrectResponse = "@$username -> You got the correct answer: '$triviacorrect' and have been awarded $triviapoints $currencyname."
-            self.QuestionResponse = "::TRIVIA QUESTION:: CATEGORY: $triviacategory :: DIFFICULTY: $triviadifficulty :: POINTS: $triviapoints\\n$triviaquestion :: $triviaanswers Use $triviaanswercommand <number> to answer"
             with codecs.open(settingsfile, encoding="utf-8-sig", mode="r") as f:
-                fileSettings = json.load(f, encoding="utf-8")
-                self.__dict__.update(fileSettings)
+                settings = json.load(f, encoding="utf-8")
+            self.__dict__ = Merge(defaults, settings)
+        except Exception as ex:
+            if Logger:
+                Logger.error(str(ex))
+            else:
+                Parent.Log(ScriptName, str(ex))
+            self.__dict__ = defaults
 
-        except Exception as e:
-            Parent.Log(ScriptName, str(e))
-
+    def DefaultSettings(self, settingsfile=None):
+        defaults = dict()
+        with codecs.open(settingsfile, encoding="utf-8-sig", mode="r") as f:
+            ui = json.load(f, encoding="utf-8")
+        for key in ui:
+            if 'value' in ui[key]:
+                try:
+                    defaults[key] = ui[key]['value']
+                except:
+                    if key != "output_file":
+                        if Logger:
+                            Logger.warn("DefaultSettings(): Could not find key {0} in settings".format(key))
+                        else:
+                            Parent.Log(ScriptName, "DefaultSettings(): Could not find key {0} in settings".format(key))
+        return defaults
     def Reload(self, jsonData):
         """ Reload settings from the user interface by given json data. """
-        Parent.Log(ScriptName, "Reload Settings")
-        fileLoadedSettings = json.loads(jsonData, encoding="utf-8")
-        self.__dict__.update(fileLoadedSettings)
+        if Logger:
+            Logger.debug("Reload Settings")
+        else:
+            Parent.Log(ScriptName, "Reload Settings")
+        self.__dict__ = Merge(self.DefaultSettings(UIConfigFile), json.loads(jsonData, encoding="utf-8"))
 
+
+class StreamlabsLogHandler(logging.StreamHandler):
+    def emit(self, record):
+        try:
+            message = self.format(record)
+            Parent.Log(ScriptName, message)
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
+
+def GetLogger():
+    log = logging.getLogger(ScriptName)
+    log.setLevel(logging.DEBUG)
+
+    sl = StreamlabsLogHandler()
+    sl.setFormatter(logging.Formatter("%(funcName)s(): %(message)s"))
+    sl.setLevel(logging.INFO)
+    log.addHandler(sl)
+
+    fl = TimedRotatingFileHandler(filename=os.path.join(os.path.dirname(
+        __file__), "info"), when="w0", backupCount=8, encoding="utf-8")
+    fl.suffix = "%Y%m%d"
+    fl.setFormatter(logging.Formatter(
+        "%(asctime)s  %(funcName)s(): %(levelname)s: %(message)s"))
+    fl.setLevel(logging.INFO)
+    log.addHandler(fl)
+
+    if ScriptSettings.DebugMode:
+        dfl = TimedRotatingFileHandler(filename=os.path.join(os.path.dirname(
+            __file__), "debug"), when="h", backupCount=24, encoding="utf-8")
+        dfl.suffix = "%Y%m%d%H%M%S"
+        dfl.setFormatter(logging.Formatter(
+            "%(asctime)s  %(funcName)s(): %(levelname)s: %(message)s"))
+        dfl.setLevel(logging.DEBUG)
+        log.addHandler(dfl)
+
+    log.debug("Logger initialized")
+    return log
 
 def Init():
     global Initialized
     global ScriptSettings
     global KnownBots
+    global Logger
+
     if Initialized:
         Parent.Log(ScriptName, "Skip Initialization. Already Initialized.")
         return
     seed()
-    Parent.Log(ScriptName, "Initialize")
+    # Load saved settings and validate values
+    ScriptSettings = Settings(SettingsFile)
+    Logger = GetLogger()    
 
     if KnownBots is None:
         try:
@@ -180,10 +225,8 @@ def Init():
                 "https://api.twitchinsights.net/v1/bots/online", {}))['response'])['bots']
             KnownBots = [bot[0].lower() for bot in botData]
         except:
-            Parent.Log(ScriptName, str(e))
+            Logger.error(str(e))
             KnownBots = []
-    # Load saved settings and validate values
-    ScriptSettings = Settings(SettingsFile)
 
     SendQuestionEvent()
     SendSettingsEvent()
@@ -210,8 +253,7 @@ def Execute(data):
                 subCommand = data.GetParam(1).lower()
                 if Parent.HasPermission(data.User, "Moderator", ""):
                     if subCommand == "clear":
-                        Parent.SendTwitchMessage(
-                            Parse(ScriptSettings.ClearResponse, data.User, data.UserName, "", data.Message))
+                        Parent.SendTwitchMessage(Parse(ScriptSettings.ClearResponse, data.User, data.UserName, "", data.Message))
                         ClearCurrentQuestion()
                 else:
                     pass
@@ -226,14 +268,15 @@ def Execute(data):
                 return
             # Someone is answering a trivia question.
             if data.GetParamCount() > 1:
-                answer = data.GetParam(1)
+                answer = data.GetParam(1).lower()
                 selected_answer = None
-                if answer.isnumeric():
-                    answer_index = int(answer) - 1
+                answer_list = ["a", "b", "c", "d"]
+                if answer in answer_list:
+                    answer_index = answer_list.index(answer)
                     if answer_index >= 0:
                         selected_answer = CurrentQuestion.answers[answer_index]
                         CurrentAnswers.append(data.User)
-                        Parent.Log(ScriptName, json.dumps(CurrentAnswers))
+                        Logger.debug(json.dumps(CurrentAnswers))
                         if CurrentQuestion.correct_index == answer_index:
                             AnsweredCorrect = True
                             # Apply Points
@@ -242,7 +285,7 @@ def Execute(data):
                             Parent.SendTwitchMessage(Parse(ScriptSettings.CorrectResponse, data.User, data.UserName, "", data.Message))
                             SendQuestionAnsweredEvent(data.UserName)
                             ClearCurrentQuestion()
-                            SendQuestionClearEvent()
+                            # SendQuestionClearEvent()
                         else:
                             Parent.SendTwitchMessage(Parse(ScriptSettings.IncorrectResponse, data.User, data.UserName, "", data.Message))
                 else:
@@ -255,7 +298,7 @@ def Tick():
     pass
 
 def ScriptToggled(state):
-    Parent.Log(ScriptName, "State Changed: " + str(state))
+    Logger.debug("State Changed: " + str(state))
     if state:
         Init()
     else:
@@ -264,7 +307,7 @@ def ScriptToggled(state):
 
 
 def ReloadSettings(jsondata):
-    Parent.Log(ScriptName, "Reload Settings")
+    Logger.debug("Reload Settings")
     # Reload saved settings and validate values
     Unload()
     Init()
@@ -328,27 +371,21 @@ def unescapeHtml(s):
     h = HTMLParser()
     return h.unescape(s.strip())
 
-def QuestionTimeoutThread(currentQuestion, seconds, timeoutResponse):
+def QuestionTimeoutThread(seconds, timeoutResponse):
     global AnsweredCorrect
-    # Parent.Log(ScriptName, "TIME OUT: THREAD START")
+    global CurrentQuestion
     counter = 0
-    while counter < seconds and currentQuestion is not None and not AnsweredCorrect:
+    while counter < seconds and CurrentQuestion is not None and not AnsweredCorrect:
         time.sleep(1)
         counter += 1
 
-    if currentQuestion and not AnsweredCorrect:
+    if CurrentQuestion and not AnsweredCorrect:
         SendQuestionTimeoutEvent()
         if timeoutResponse:
-            Parent.SendTwitchMessage(timeoutResponse.replace("$triviacorrect", unescapeHtml(currentQuestion.correct_answer)))
-
-
-    if not AnsweredCorrect:
+            Parent.SendTwitchMessage(timeoutResponse.replace("$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer)))
         ClearCurrentQuestion()
-        SendQuestionClearEvent()
 
     return
-
-
 
 def GetItemIdFromName(lst, name):
     iid = [item['id'] for item in lst if item['name'] == name]
@@ -366,8 +403,9 @@ def GetPointsForDifficulty(difficulty):
 
 def GetChatFormattedAnswers(answers):
     fmt = ""
+    choices = [ 'a', 'b', 'c', 'd' ]
     for x in range(0, len(answers)):
-        fmt += "{0}) {1} :: ".format(str(x+1), unescapeHtml(answers[x]))
+        fmt += "{0}) {1} :: ".format(str(choices[x]), unescapeHtml(answers[x]))
     return fmt
 
 
@@ -384,7 +422,7 @@ def GetApiUrl():
     tpe = GetItemIdFromName(TYPES, ScriptSettings.QuestionType)
 
     url = API_URL.format(cat, dif, tpe)
-    Parent.Log(ScriptName, url)
+    Logger.debug(url)
     return url
 
 def GetNewQuestion():
@@ -411,9 +449,9 @@ def SendQuestionTimeoutEvent():
     global CurrentQuestion
     if CurrentQuestion is not None:
         Parent.BroadcastWsEvent("EVENT_TRIVIA_TIMEOUT", json.dumps({
-            "answer": CurrentQuestion.correct_answer
+            "answer": CurrentQuestion.correct_answer,
+            "answer_index": CurrentQuestion.correct_index
         }))
-
 
 def SendQuestionClearEvent():
     Parent.BroadcastWsEvent("EVENT_TRIVIA_CLEAR", json.dumps(None))
@@ -424,19 +462,21 @@ def SendQuestionAnsweredEvent(user):
     if CurrentQuestion is not None:
         Parent.BroadcastWsEvent("EVENT_TRIVIA_ANSWERED", json.dumps({
             "user": user,
-            "answer": CurrentQuestion.correct_answer
+            "answer": CurrentQuestion.correct_answer,
+            "answer_index": CurrentQuestion.correct_index
         }))
 
 def TriggerQuestionFromUser(userid, username):
     if not Parent.IsOnCooldown(ScriptName, ScriptSettings.Command):
         if CurrentQuestion is None:
             GetNewQuestion()
-        Parent.AddCooldown(ScriptName, ScriptSettings.Command, ScriptSettings.Cooldown)
-        SendQuestionEvent()
-        if ScriptSettings.TimeToAnswer > 0:
-            # Start a new thread to timeout the question
-            threading.Thread(target=QuestionTimeoutThread, args=(
-                CurrentQuestion, ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
+            # Should I send this if there is an Active Question?
+            SendQuestionEvent()
+            Parent.AddCooldown(ScriptName, ScriptSettings.Command, ScriptSettings.Cooldown)
+            if ScriptSettings.TimeToAnswer > 0:
+                # Start a new thread to timeout the question
+                threading.Thread(target=QuestionTimeoutThread, args=(ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
+                # RunningThread = threading.Timer(interval=ScriptSettings.TimeToAnswer, function=QuestionTimeoutTimer, args=(ScriptSettings.TimeoutResponse))
         Parent.SendTwitchMessage(Parse(ScriptSettings.QuestionResponse, userid, username, "", ""))
 
 
@@ -446,20 +486,21 @@ def TriggerQuestion():
 def ClearQuestion():
     Parent.SendTwitchMessage(Parse(ScriptSettings.ClearResponse, Parent.GetChannelName().lower(), Parent.GetChannelName(), "", ""))
     ClearCurrentQuestion()
+    SendQuestionClearEvent()
 
 def OpenScriptUpdater():
     currentDir = os.path.realpath(os.path.dirname(__file__))
     chatbotRoot = os.path.realpath(os.path.join(currentDir, "../../../"))
     libsDir = os.path.join(currentDir, "libs/updater")
-    Parent.Log(ScriptName, libsDir)
+    Logger.debug(libsDir)
     try:
         src_files = os.listdir(libsDir)
         tempdir = tempfile.mkdtemp()
-        Parent.Log(ScriptName, tempdir)
+        Logger.debug(tempdir)
         for file_name in src_files:
             full_file_name = os.path.join(libsDir, file_name)
             if os.path.isfile(full_file_name):
-                Parent.Log(ScriptName, "Copy: " + full_file_name)
+                Logger.debug("Copy: " + full_file_name)
                 shutil.copy(full_file_name, tempdir)
         updater = os.path.join(tempdir, "ApplicationUpdater.exe")
         updaterConfigFile = os.path.join(tempdir, "update.manifest")
@@ -489,9 +530,9 @@ def OpenScriptUpdater():
                 "name": repoVals[1]
             }
         }
-        Parent.Log(ScriptName, updater)
+        Logger.debug(updater)
         configJson = json.dumps(updaterConfig)
-        Parent.Log(ScriptName, configJson)
+        Logger.debug(configJson)
         with open(updaterConfigFile, "w+") as f:
             f.write(configJson)
         os.startfile(updater)
@@ -500,6 +541,28 @@ def OpenScriptUpdater():
         raise
     return
 
+
+def Merge(source, destination):
+    """
+    >>> a = { 'first' : { 'all_rows' : { 'pass' : 'dog', 'number' : '1' } } }
+    >>> b = { 'first' : { 'all_rows' : { 'fail' : 'cat', 'number' : '5' } } }
+    >>> merge(b, a) == { 'first' : { 'all_rows' : { 'pass' : 'dog', 'fail' : 'cat', 'number' : '5' } } }
+    True
+    """
+    for key, value in source.items():
+        if isinstance(value, dict):
+            # get node or create one
+            node = destination.setdefault(key, {})
+            Merge(value, node)
+        elif isinstance(value, list):
+            destination.setdefault(key, value)
+        else:
+            if key in destination:
+                pass
+            else:
+                destination.setdefault(key, value)
+
+    return destination
 
 def OpenFollowOnTwitchLink():
     os.startfile("https://twitch.tv/DarthMinos")

@@ -4,57 +4,69 @@
 <head lang="en">
 	<meta charset="UTF-8">
 	<title>Trivia Overlay</title>
-	<link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" type="text/css" href="trivia.css" />
 	<link rel="stylesheet" type="text/css"
 		href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css" />
 
 </head>
-
 <body>
-	<div id="config-messages" class="hidden">
-		<header class="group">Trivia Overlay</header>
-		<div class="settings group hidden">
-			<div>Settings Not Saved</div>
-			<div>Open the settings for Trivia Overlay, Configure, and Save the settings.</div>
-		</div>
 
-		<div class="api-key group hidden">
-			<div>No API Key found or load!</div>
-			<div>Right click on the script in ChatBot and select <code>Insert API Key</code></div>
-		</div>
+<div id="config-messages" class="hidden">
+	<header class="group">Trivia Overlay</header>
+	<div class="settings group hidden">
+		<div>Settings Not Saved</div>
+		<div>Open the settings for Trivia Overlay, Configure, and Save the settings.</div>
 	</div>
 
-	<div class="trivia-host">
-		<div class="trivia hidden" id="trivia">
+	<div class="api-key group hidden">
+		<div>No API Key found or load!</div>
+		<div>Right click on the script in ChatBot and select <code>Insert API Key</code></div>
+	</div>
+</div>
+
+<div id="triva-host" class="hidden">
+	<div class="trivia">
+
+		<div class="question">
+			<div class="difficulty"></div>
+			<div class="points">0</div>
 			<div class="category"></div>
-			<div class="question"></div>
-			<ol class="answers"></ol>
+			<div class="text"></div>
 
-			<div class="help">Use <code><span id="answer-command"></span> #</code> to guess.</div>
 
-			<!-- <div class="progress">
-				<div class="bar"></div>
-			</div> -->
 		</div>
 
-		<div class="correct hidden" id="trivia-correct">
+		<div class="help">Use <code><span id="answer-command"></span> α</code> to guess.</div>
+		<div class="result">
 			<div class="message"><span class="who"></span> got the correct answer!</div>
-			<div class="answer"></div>
+			<div class="reset-help">Use <code><span id="start-command"></span></code> to start again.</div>
 		</div>
 
-		<div class="no-answer hidden" id="trivia-expired">
-			<div class="message">No one got the correct answer.</div>
-			<div class="answer"></div>
+		<div class="progress">
+			<div class="fill"></div>
 		</div>
+
+		<div class="answers">
+			<ol>
+			</ol>
+		</div>
+
 	</div>
+</div>
+
+<div class="debug">
+	<button data-action="newQuestion" data-button>START QUESTION</button>
+	<button data-action="endQuestion" data-button>CLOSE QUESTION</button>
+	<button data-action="clearQuestion" data-button>CLEAR QUESTION</button>
+</div>
+
 	<script src="API_Key.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<script src="settings.js"></script>
 	<script src="defaults.js"></script>
-	<script src="client.js"></script>
+	<script src="trivia.js"></script>
 	<script type="text/javascript" script-name="edgefonts"
 		src="http://use.edgefonts.net/bangers;amaranth;allan;bowlby-one;changa-one;days-one;droid-sans;fugaz-one.js"></script>
 
 </body>
-
 </html>
