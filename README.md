@@ -1,6 +1,8 @@
-# CHATBOT COMMAND FUNCTIONS
+# CHATBOT TRIVIA OVERLAY
 
-Adds functions to use in your commands
+Creates a trivia overlay and in chat to interact with chat.
+
+[![See Trivia Overlay In Action](https://img.youtube.com/vi/_TgZ5OJOTjc/0.jpg)](https://www.youtube.com/watch?v=_TgZ5OJOTjc)
 
 
 ## REQUIREMENTS
