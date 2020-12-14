@@ -43,11 +43,14 @@ ScriptSettings = None
 Initialized = False
 CurrentQuestion = None
 CurrentAnswers = list([])
+CurrentQuestionEndTickTime = None
 CorrectIndex = -1
 KnownBots = None
 AnsweredCorrect = False
 RunningThread = None
 Logger = None
+LastTickTime = None
+
 
 API_URL = "https://opentdb.com/api.php?amount=1&category={0}&difficulty={1}&type={2}"
 
@@ -210,11 +213,14 @@ def Init():
     global ScriptSettings
     global KnownBots
     global Logger
+    global LastTickTime
 
     if Initialized:
         Parent.Log(ScriptName, "Skip Initialization. Already Initialized.")
         return
     seed()
+
+    LastTickTime = time.time()
     # Load saved settings and validate values
     ScriptSettings = Settings(SettingsFile)
     Logger = GetLogger()    
@@ -295,7 +301,17 @@ def Execute(data):
                 return
 
 def Tick():
-    pass
+    global LastTickTime
+    global CurrentQuestionEndTickTime
+    if ScriptSettings.EnableAutoTrivia:
+        intervalSeconds = ScriptSettings.AutoTriviaInterval * 60
+        if time.time() - LastTickTime >= intervalSeconds:
+            Logger.debug("Start Auto Question")
+            TriggerQuestion()
+            LastTickTime = time.time()
+    if CurrentQuestionEndTickTime and time.time() >= CurrentQuestionEndTickTime:
+        #threading.Thread(target=QuestionTimeoutThread, args=(ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
+        QuestionTimeout()
 
 def ScriptToggled(state):
     Logger.debug("State Changed: " + str(state))
@@ -371,21 +387,34 @@ def unescapeHtml(s):
     h = HTMLParser()
     return h.unescape(s.strip())
 
-def QuestionTimeoutThread(seconds, timeoutResponse):
+def QuestionTimeout():
     global AnsweredCorrect
     global CurrentQuestion
-    counter = 0
-    while counter < seconds and CurrentQuestion is not None and not AnsweredCorrect:
-        time.sleep(1)
-        counter += 1
-
+    global CurrentQuestionEndTickTime
     if CurrentQuestion and not AnsweredCorrect:
+        Logger.debug("Sending Timeout")
         SendQuestionTimeoutEvent()
-        if timeoutResponse:
-            Parent.SendTwitchMessage(timeoutResponse.replace("$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer)))
+        if ScriptSettings.TimeoutResponse:
+            Parent.SendTwitchMessage(ScriptSettings.TimeoutResponse.replace("$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer)))
+        Logger.debug("Clear Current Question")
         ClearCurrentQuestion()
-
+        CurrentQuestionEndTickTime = None
     return
+
+# def QuestionTimeoutThread(seconds, timeoutResponse):
+#     global AnsweredCorrect
+#     global CurrentQuestion
+#     counter = 0
+#     while counter < seconds and CurrentQuestion is not None and not AnsweredCorrect:
+#         time.sleep(1)
+#         counter += 1
+
+#     if CurrentQuestion and not AnsweredCorrect:
+#         SendQuestionTimeoutEvent()
+#         if timeoutResponse:
+#             Parent.SendTwitchMessage(timeoutResponse.replace("$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer)))
+#         ClearCurrentQuestion()
+#     return
 
 def GetItemIdFromName(lst, name):
     iid = [item['id'] for item in lst if item['name'] == name]
@@ -412,9 +441,10 @@ def GetChatFormattedAnswers(answers):
 def ClearCurrentQuestion():
     global CurrentQuestion
     global CurrentAnswers
-    global ScriptName
+    global LastTickTime
     CurrentAnswers = None
     CurrentQuestion = None
+    LastTickTime = time.time()
 
 def GetApiUrl():
     cat = GetItemIdFromName(CATEGORIES, ScriptSettings.QuestionCategory)
@@ -429,11 +459,13 @@ def GetNewQuestion():
     global CurrentQuestion
     global CurrentAnswers
     global AnsweredCorrect
+    global LastTickTime
     AnsweredCorrect = False
     resp = json.loads(Parent.GetRequest(GetApiUrl(), {}))['response']
     CurrentQuestion = TriviaQuestion(resp)
     CurrentAnswers = list([])
-    
+    LastTickTime = time.time()
+
 def SendSettingsEvent():
     Parent.BroadcastWsEvent("EVENT_TRIVIA_SETTINGS", json.dumps(ScriptSettings.__dict__))
 
@@ -467,6 +499,7 @@ def SendQuestionAnsweredEvent(user):
         }))
 
 def TriggerQuestionFromUser(userid, username):
+    global CurrentQuestionEndTickTime
     if not Parent.IsOnCooldown(ScriptName, ScriptSettings.Command):
         if CurrentQuestion is None:
             GetNewQuestion()
@@ -474,8 +507,10 @@ def TriggerQuestionFromUser(userid, username):
             SendQuestionEvent()
             Parent.AddCooldown(ScriptName, ScriptSettings.Command, ScriptSettings.Cooldown)
             if ScriptSettings.TimeToAnswer > 0:
+                # set the time. and the exit time...
+                CurrentQuestionEndTickTime = time.time() + ScriptSettings.TimeToAnswer
                 # Start a new thread to timeout the question
-                threading.Thread(target=QuestionTimeoutThread, args=(ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
+                # threading.Thread(target=QuestionTimeoutThread, args=(ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
                 # RunningThread = threading.Timer(interval=ScriptSettings.TimeToAnswer, function=QuestionTimeoutTimer, args=(ScriptSettings.TimeoutResponse))
         Parent.SendTwitchMessage(Parse(ScriptSettings.QuestionResponse, userid, username, "", ""))
 
@@ -487,6 +522,11 @@ def ClearQuestion():
     Parent.SendTwitchMessage(Parse(ScriptSettings.ClearResponse, Parent.GetChannelName().lower(), Parent.GetChannelName(), "", ""))
     ClearCurrentQuestion()
     SendQuestionClearEvent()
+    
+def CloseQuestion():
+    SendQuestionTimeoutEvent()
+    if ScriptSettings.TimeoutResponse:
+            Parent.SendTwitchMessage(ScriptSettings.TimeoutResponse.replace("$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer)))
 
 def OpenScriptUpdater():
     currentDir = os.path.realpath(os.path.dirname(__file__))

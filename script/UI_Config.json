@@ -34,6 +34,23 @@
 		"tooltip": "The amount of time people get to answer a question.",
 		"group": "COMMANDS"
 	},
+	"EnableAutoTrivia": {
+		"type": "checkbox",
+		"label": "Enable Auto Trivia",
+		"value": false,
+		"tooltip": "If enabled, will log higher level of events.",
+		"group": "COMMANDS"
+	},
+	"AutoTriviaInterval": {
+		"type": "slider",
+		"value": 60,
+		"min": 1,
+		"max": 720,
+		"ticks": 1,
+		"label": "Auto Trivia Interval (minutes)",
+		"tooltip": "The time between trivia if no one triggers it.",
+		"group": "COMMANDS"
+	},
 	"OpenOverlayInBrowser": {
 		"type": "button",
 		"label": "OPEN OVERLAY IN BROWSER",
@@ -47,6 +64,14 @@
 		"label": "Start Question",
 		"tooltip": "Starts a new question",
 		"function": "TriggerQuestion",
+		"wsevent": "EVENT_NONE",
+		"group": "COMMANDS"
+	},
+	"CLoseQuestion": {
+		"type": "button",
+		"label": "Close Question",
+		"tooltip": "Close current question",
+		"function": "CloseQuestion",
 		"wsevent": "EVENT_NONE",
 		"group": "COMMANDS"
 	},
