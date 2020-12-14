@@ -19,6 +19,7 @@ var DEFAULT_SETTINGS = {
   "PointsEasy": 100,
   "PointsMedium": 250,
   "PointsHard": 500,
+  "TriviaCommandColor": "rgba(51, 51, 255, 1)",
   "TriviaCorrectBorderColor": "rgba(51, 51, 255, 1)",
   "TriviaCorrectBackgroundColor": "rgba(51, 255, 51, 1)",
   "TriviaCorrectTextColor": "rgba(51, 51, 51, 1)",

@@ -13,6 +13,7 @@
 	--trivia-question-category-color: #3ff;
 	--trivia-difficulty-background-color: #f33;
 	--trivia-difficulty-text-color: #333;
+	--trivia-command-color: #f33;
 
 	--trivia-font-family: days-one;
 	--trivia-margin-top: 105px;
@@ -47,8 +48,8 @@ body, html {
 	left: 0;
 	right: 0;
 	position: absolute;
-	background-color: red;
-	color: white;
+	background-color: #f33;
+	color: #eee;
 	font-size: 4vh;
 	font-weight: bold;
 	text-align: left;
@@ -213,7 +214,7 @@ body, html {
 .trivia .reset-help code,
 .trivia .help code {
 	text-transform: lowercase;
-	color: #f33;
+	color: var(--trivia-command-color, #f33);
 }
 
 .trivia.closed .help {

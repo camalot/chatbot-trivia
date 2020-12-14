@@ -47,7 +47,7 @@ function initializeUI() {
 		.css("--trivia-question-category-color", `${settings.TriviaQuestionCategoryColor || "rgba(51, 255, 255, 1)"}`)
 		.css("--trivia-difficulty-background-color", `${settings.TriviaDifficultyBackgroundColor || "rgba(51, 255, 255, 1)"}`)
 		.css("--trivia-difficulty-text-color", `${settings.TriviaDifficultyTextColor || "rgba(255, 51, 51, 1)"}`)
-
+		.css("--trivia-command-color", `${settings.TriviaCommandColor || "rgba(51, 51, 255, 1)"}`)
 
 		.css("--trivia-margin-top", `${settings.TriviaMarginTop || "0"}px`)
 		.css("--trivia-opacity", `${topacity || "1"}`)

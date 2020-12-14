@@ -229,7 +229,13 @@
 		"tooltip": "The Number of points to award to the user for a hard difficulty question.",
 		"group": "AWARDED POINTS"
 	},
-
+	"TriviaCommandColor": {
+		"type": "colorpicker",
+		"label": "Help text Command Color",
+		"value": "rgba(51, 51, 255, 1)",
+		"tooltip": "Color of the command in the help text.",
+		"group": "STYLE"
+	},
 	"TriviaCorrectBorderColor": {
 		"type": "colorpicker",
 		"label": "Correct Answer Border",
