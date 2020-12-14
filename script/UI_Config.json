@@ -38,7 +38,7 @@
 		"type": "checkbox",
 		"label": "Enable Auto Trivia",
 		"value": false,
-		"tooltip": "If enabled, will log higher level of events.",
+		"tooltip": "If enabled, trivia will trigger automatically at the specified interval.",
 		"group": "COMMANDS"
 	},
 	"AutoTriviaInterval": {
