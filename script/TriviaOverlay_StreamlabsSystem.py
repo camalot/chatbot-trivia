@@ -47,6 +47,7 @@ CurrentQuestionEndTickTime = None
 CorrectIndex = -1
 KnownBots = None
 AnsweredCorrect = False
+CorrectlyAnswered = list([])
 RunningThread = None
 Logger = None
 LastTickTime = None
@@ -112,8 +113,14 @@ class TriviaQuestion(object):
                 Logger.debug("LEN: " + str(numberOfAnswers))
                 self.answers = self.incorrect_answers[:]
 
-                # Shouldnt shift if question type is boolean. it should be [true,false]
-                position = randrange(numberOfAnswers + 1)
+                # Shouldn't shift if question type is boolean. it should be [true,false]
+                if self.type == "boolean":
+                    if self.correct_answer == "True":
+                        position = 0
+                    else:
+                        position = 1
+                else:
+                    position = randrange(numberOfAnswers + 1)
                 self.correct_index = position
                 Logger.debug("Correct: " + str(self.correct_index))
                 Logger.debug("Correct: " + str(self.correct_answer))
@@ -261,16 +268,22 @@ def Execute(data):
                     if subCommand == "clear":
                         Parent.SendTwitchMessage(Parse(ScriptSettings.ClearResponse, data.User, data.UserName, "", data.Message))
                         ClearCurrentQuestion()
+                    if subCommand == "close":
+                        Parent.SendTwitchMessage(Parse(ScriptSettings.ClearResponse, data.User, data.UserName, "", data.Message))
+                        CloseQuestion()
                 else:
-                    pass
+                    return
             else:
-                TriggerQuestionFromUser(data.User, data.UserName)
+                if Parent.HasPermission(data.User, ScriptSettings.TriviaPermission, ""):
+                    TriggerQuestionFromUser(data.User, data.UserName)
         elif CurrentQuestion is not None and commandTrigger == ScriptSettings.AnswerCommand:
+            # check if user has permission to answer
+            if not Parent.HasPermission(data.User, ScriptSettings.AnswerPermission, ""):
+                return
             # check if they already answered
             if data.User in CurrentAnswers:
                 # ignore since they already answered.
-                Parent.SendTwitchMessage(Parse(
-                    ScriptSettings.AlreadyAnsweredResponse, data.User, data.UserName, "", data.Message))
+                Parent.SendTwitchMessage(Parse(ScriptSettings.AlreadyAnsweredResponse, data.User, data.UserName, "", data.Message))
                 return
             # Someone is answering a trivia question.
             if data.GetParamCount() > 1:
@@ -289,6 +302,7 @@ def Execute(data):
                             Parent.AddPoints(data.User, data.UserName, CurrentQuestion.points)
                             # Tell Chat
                             Parent.SendTwitchMessage(Parse(ScriptSettings.CorrectResponse, data.User, data.UserName, "", data.Message))
+                            CorrectlyAnswered.append(data.UserName)
                             SendQuestionAnsweredEvent(data.UserName)
                             ClearCurrentQuestion()
                             # SendQuestionClearEvent()
@@ -304,6 +318,9 @@ def Tick():
     global LastTickTime
     global CurrentQuestionEndTickTime
     if ScriptSettings.EnableAutoTrivia:
+        if LastTickTime is None:
+            # if last tick time was not ever set, lets make sure it was set.
+            LastTickTime = time.time()
         intervalSeconds = ScriptSettings.AutoTriviaInterval * 60
         if time.time() - LastTickTime >= intervalSeconds:
             Logger.debug("Start Auto Question")
@@ -401,21 +418,6 @@ def QuestionTimeout():
         CurrentQuestionEndTickTime = None
     return
 
-# def QuestionTimeoutThread(seconds, timeoutResponse):
-#     global AnsweredCorrect
-#     global CurrentQuestion
-#     counter = 0
-#     while counter < seconds and CurrentQuestion is not None and not AnsweredCorrect:
-#         time.sleep(1)
-#         counter += 1
-
-#     if CurrentQuestion and not AnsweredCorrect:
-#         SendQuestionTimeoutEvent()
-#         if timeoutResponse:
-#             Parent.SendTwitchMessage(timeoutResponse.replace("$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer)))
-#         ClearCurrentQuestion()
-#     return
-
 def GetItemIdFromName(lst, name):
     iid = [item['id'] for item in lst if item['name'] == name]
     return iid[0] if not None else "any"
@@ -442,6 +444,10 @@ def ClearCurrentQuestion():
     global CurrentQuestion
     global CurrentAnswers
     global LastTickTime
+    global CorrectlyAnswered
+    global AnsweredCorrect
+    AnsweredCorrect = False
+    CorrectlyAnswered = list([])
     CurrentAnswers = None
     CurrentQuestion = None
     LastTickTime = time.time()
@@ -460,11 +466,20 @@ def GetNewQuestion():
     global CurrentAnswers
     global AnsweredCorrect
     global LastTickTime
-    AnsweredCorrect = False
-    resp = json.loads(Parent.GetRequest(GetApiUrl(), {}))['response']
-    CurrentQuestion = TriviaQuestion(resp)
-    CurrentAnswers = list([])
-    LastTickTime = time.time()
+    global CorrectlyAnswered
+    try:
+        CorrectlyAnswered = list([])
+        AnsweredCorrect = False
+        resp = json.loads(Parent.GetRequest(GetApiUrl(), {}))['response']
+        CurrentQuestion = TriviaQuestion(resp)
+        CurrentAnswers = list([])
+        LastTickTime = time.time()
+    except Exception as e:
+        CurrentQuestion = None
+        CurrentAnswers = list([])
+        AnsweredCorrect = False
+        CorrectlyAnswered = list([])
+        Logger.error(str(e))
 
 def SendSettingsEvent():
     Parent.BroadcastWsEvent("EVENT_TRIVIA_SETTINGS", json.dumps(ScriptSettings.__dict__))
@@ -490,10 +505,10 @@ def SendQuestionClearEvent():
 
 
 def SendQuestionAnsweredEvent(user):
-    global CurrentQuestion
     if CurrentQuestion is not None:
         Parent.BroadcastWsEvent("EVENT_TRIVIA_ANSWERED", json.dumps({
             "user": user,
+            "users": CorrectlyAnswered,
             "answer": CurrentQuestion.correct_answer,
             "answer_index": CurrentQuestion.correct_index
         }))
@@ -507,11 +522,7 @@ def TriggerQuestionFromUser(userid, username):
             SendQuestionEvent()
             Parent.AddCooldown(ScriptName, ScriptSettings.Command, ScriptSettings.Cooldown)
             if ScriptSettings.TimeToAnswer > 0:
-                # set the time. and the exit time...
                 CurrentQuestionEndTickTime = time.time() + ScriptSettings.TimeToAnswer
-                # Start a new thread to timeout the question
-                # threading.Thread(target=QuestionTimeoutThread, args=(ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
-                # RunningThread = threading.Timer(interval=ScriptSettings.TimeToAnswer, function=QuestionTimeoutTimer, args=(ScriptSettings.TimeoutResponse))
         Parent.SendTwitchMessage(Parse(ScriptSettings.QuestionResponse, userid, username, "", ""))
 
 
@@ -525,8 +536,9 @@ def ClearQuestion():
     
 def CloseQuestion():
     SendQuestionTimeoutEvent()
+    ClearCurrentQuestion()
     if ScriptSettings.TimeoutResponse:
-            Parent.SendTwitchMessage(ScriptSettings.TimeoutResponse.replace("$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer)))
+        Parent.SendTwitchMessage(ScriptSettings.TimeoutResponse.replace("$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer)))
 
 def OpenScriptUpdater():
     currentDir = os.path.realpath(os.path.dirname(__file__))

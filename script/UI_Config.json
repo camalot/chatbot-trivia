@@ -7,6 +7,20 @@
 		"tooltip": "The command for new trivia question.",
 		"group": "COMMANDS"
 	},
+	"TriviaPermission": {
+		"type": "dropdown",
+		"value": "Everyone",
+		"items": [
+			"Everyone",
+			"Regular",
+			"Subscriber",
+			"VIP",
+			"Moderator"
+		],
+		"label": "Start Trivia Permission",
+		"tooltip": "Set the permission level for the trigger command",
+		"group": "Command"
+	},
 	"Cooldown": {
 		"type": "slider",
 		"label": "Cooldown (seconds)",
@@ -23,6 +37,20 @@
 		"value": "!answer",
 		"tooltip": "The command to answer questions.",
 		"group": "COMMANDS"
+	},
+	"AnswerPermission": {
+		"type": "dropdown",
+		"value": "Everyone",
+		"items": [
+			"Everyone",
+			"Regular",
+			"Subscriber",
+			"VIP",
+			"Moderator"
+		],
+		"label": "Answer Trivia Permission",
+		"tooltip": "Set the permission level to answer the trivia",
+		"group": "Command"
 	},
 	"TimeToAnswer": {
 		"type": "slider",
@@ -198,7 +226,6 @@
 		"tooltip": "Questions Difficulty",
 		"group": "OPTIONS"
 	},
-
 	"PointsEasy": {
 		"type": "slider",
 		"label": "Easy Difficulty",
@@ -257,7 +284,6 @@
 		"tooltip": "Text color of the correct answer after displayed.",
 		"group": "STYLE"
 	},
-
 	"TriviaAnswerBorderColor": {
 		"type": "colorpicker",
 		"label": "Answer Border Color",
@@ -279,7 +305,6 @@
 		"tooltip": "Text color of the answers.",
 		"group": "STYLE"
 	},
-	
 	"TriviaQuestionBorderColor": {
 		"type": "colorpicker",
 		"label": "Answer Border Color",
@@ -308,7 +333,6 @@
 		"tooltip": "Text color of the category.",
 		"group": "STYLE"
 	},
-
 	"TriviaDifficultyTextColor": {
 		"type": "colorpicker",
 		"label": "Difficulty/Points Color",
@@ -323,7 +347,6 @@
 		"tooltip": "Background color of the Difficulty/Points.",
 		"group": "STYLE"
 	},
-
 	"TriviaWidth": {
 		"type": "slider",
 		"label": "Trivia Width (%)",
@@ -354,7 +377,6 @@
 		"tooltip": "Transparency of the overlay",
 		"group": "STYLE"
 	},
-
 	"FontName": {
 		"type": "dropdown",
 		"value": "days-one",
@@ -506,7 +528,6 @@
 		"tooltip": "Animation after it shows",
 		"group": "STYLE"
 	},
-	
 	"OpenGithubDonateLink": {
 		"type": "button",
 		"label": "💚 Support on Github",

@@ -1,7 +1,9 @@
 var DEFAULT_SETTINGS = {
   "Command": "!trivia",
+  "TriviaPermission": "Everyone",
   "Cooldown": 30,
   "AnswerCommand": "!answer",
+  "AnswerPermission": "Everyone",
   "TimeToAnswer": 60,
   "EnableAutoTrivia": false,
   "AutoTriviaInterval": 60,
