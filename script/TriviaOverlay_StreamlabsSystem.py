@@ -107,6 +107,7 @@ class TriviaQuestion(object):
             self.incorrect_answers = list([])
             resp = json.loads(jsonData, encoding="utf-8")
             if resp['response_code'] == 0 and len(resp['results']) > 0:
+                seed()
                 result = resp['results'][0]
                 self.__dict__.update(result)
                 numberOfAnswers = len(self.incorrect_answers)
@@ -226,7 +227,6 @@ def Init():
     if Initialized:
         Parent.Log(ScriptName, "Skip Initialization. Already Initialized.")
         return
-    seed()
 
     LastTickTime = time.time()
     # Load saved settings and validate values
