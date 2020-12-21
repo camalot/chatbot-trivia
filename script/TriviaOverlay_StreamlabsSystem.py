@@ -270,6 +270,12 @@ def Execute(data):
             Logger.debug("commandTrigger: {0}".format(commandTrigger))
             Logger.debug("commandParam: {0}".format(commandParam))
 
+        if CurrentQuestion and commandTrigger.lower() in POSSIBLE_ANSWERS:
+            commandParam = commandTrigger.lower()
+            commandTrigger = ScriptSettings.AnswerCommand
+            Logger.debug("commandTrigger: {0}".format(commandTrigger))
+            Logger.debug("commandParam: {0}".format(commandParam))
+
         if commandTrigger == ScriptSettings.Command:
             if data.GetParamCount() > 1:
                 # SUB COMMANDS
