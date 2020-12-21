@@ -54,7 +54,7 @@ LastTickTime = None
 
 
 API_URL = "https://opentdb.com/api.php?amount=1&category={0}&difficulty={1}&type={2}"
-
+POSSIBLE_ANSWERS = [ "a", "b", "c", "d" ]
 DIFFICULTIES = [
     {"id": "", "name": "Any"},
     {"id": "easy", "name": "Easy"},
@@ -131,6 +131,7 @@ class TriviaQuestion(object):
             else:
                 raise Exception("Unable to load trivia question.")
         except Exception as e:
+            raise e
             Logger.error(str(e))
 
 
@@ -260,6 +261,15 @@ def Execute(data):
     #     return
     if data.IsChatMessage():
         commandTrigger = data.GetParam(0).lower()
+
+        # handle letter commands
+        commands = [ "!a", "!b", "!c", "!d" ]
+        if CurrentQuestion and commandTrigger.lower() in commands:
+            commandParam = commandTrigger[1:].lower()
+            commandTrigger = ScriptSettings.AnswerCommand
+            Logger.debug("commandTrigger: {0}".format(commandTrigger))
+            Logger.debug("commandParam: {0}".format(commandParam))
+
         if commandTrigger == ScriptSettings.Command:
             if data.GetParamCount() > 1:
                 # SUB COMMANDS
@@ -286,12 +296,12 @@ def Execute(data):
                 Parent.SendTwitchMessage(Parse(ScriptSettings.AlreadyAnsweredResponse, data.User, data.UserName, "", data.Message))
                 return
             # Someone is answering a trivia question.
-            if data.GetParamCount() > 1:
-                answer = data.GetParam(1).lower()
+            if commandParam or data.GetParamCount() > 1:
+                answer = commandParam or data.GetParam(1).lower()
+                Logger.debug("{0} guessed {1}".format(data.User, answer))
                 selected_answer = None
-                answer_list = ["a", "b", "c", "d"]
-                if answer in answer_list:
-                    answer_index = answer_list.index(answer)
+                if answer in POSSIBLE_ANSWERS:
+                    answer_index = POSSIBLE_ANSWERS.index(answer)
                     if answer_index >= 0:
                         selected_answer = CurrentQuestion.answers[answer_index]
                         CurrentAnswers.append(data.User)
@@ -376,7 +386,7 @@ def Parse(parseString, userid, username, target, message):
     resultString = resultString.replace(
         "$triviacorrectindex", str(CurrentQuestion.correct_index or "NONE"))
     resultString = resultString.replace(
-        "$triviacorrect", CurrentQuestion.correct_answer or "NONE")
+        "$triviacorrect", unescapeHtml(CurrentQuestion.correct_answer or "NONE"))
 
     resultString = resultString.replace('\\n', '\n')
 
@@ -434,9 +444,8 @@ def GetPointsForDifficulty(difficulty):
 
 def GetChatFormattedAnswers(answers):
     fmt = ""
-    choices = [ 'a', 'b', 'c', 'd' ]
     for x in range(0, len(answers)):
-        fmt += "{0}) {1} :: ".format(str(choices[x]), unescapeHtml(answers[x]))
+        fmt += "{0}) {1} :: ".format(str(POSSIBLE_ANSWERS[x]), unescapeHtml(answers[x]))
     return fmt
 
 

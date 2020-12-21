@@ -19,7 +19,7 @@
 		],
 		"label": "Start Trivia Permission",
 		"tooltip": "Set the permission level for the trigger command",
-		"group": "Command"
+		"group": "COMMANDS"
 	},
 	"Cooldown": {
 		"type": "slider",
@@ -50,7 +50,7 @@
 		],
 		"label": "Answer Trivia Permission",
 		"tooltip": "Set the permission level to answer the trivia",
-		"group": "Command"
+		"group": "COMMANDS"
 	},
 	"TimeToAnswer": {
 		"type": "slider",
