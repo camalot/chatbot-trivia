@@ -264,6 +264,7 @@ def Execute(data):
 
         # handle letter commands
         commands = [ "!a", "!b", "!c", "!d" ]
+        commandParam = None
         if CurrentQuestion and commandTrigger.lower() in commands:
             commandParam = commandTrigger[1:].lower()
             commandTrigger = ScriptSettings.AnswerCommand
