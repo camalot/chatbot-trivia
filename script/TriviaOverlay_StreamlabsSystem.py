@@ -121,7 +121,7 @@ class TriviaQuestion(object):
                     else:
                         position = 1
                 else:
-                    position = randrange(numberOfAnswers + 1)
+                    position = randrange(0, numberOfAnswers + 1)
                 self.correct_index = position
                 Logger.debug("Correct: " + str(self.correct_index))
                 Logger.debug("Correct: " + str(self.correct_answer))
@@ -324,6 +324,8 @@ def Execute(data):
                             ClearCurrentQuestion()
                             # SendQuestionClearEvent()
                         else:
+                            if (ScriptSettings.DeductPoints):
+                                Parent.RemovePoints(data.User, data.UserName, CurrentQuestion.points)
                             Parent.SendTwitchMessage(Parse(ScriptSettings.IncorrectResponse, data.User, data.UserName, "", data.Message))
                 else:
                     Parent.SendTwitchMessage(Parse(ScriptSettings.UnknownAnswerResponse, data.User, data.UserName, "", data.Message))

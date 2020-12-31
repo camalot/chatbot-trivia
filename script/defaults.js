@@ -18,6 +18,7 @@ var DEFAULT_SETTINGS = {
   "QuestionCategory": "Any",
   "QuestionDifficulty": "Any",
   "QuestionType": "Any",
+  "DeductPoints": false,
   "PointsEasy": 100,
   "PointsMedium": 250,
   "PointsHard": 500,

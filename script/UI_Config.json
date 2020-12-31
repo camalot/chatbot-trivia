@@ -226,6 +226,13 @@
 		"tooltip": "Questions Difficulty",
 		"group": "OPTIONS"
 	},
+	"DeductPoints": {
+		"type": "checkbox",
+		"label": "Deduct Points If Incorrect",
+		"value": false,
+		"tooltip": "If enabled, The person will get points deducted.",
+		"group": "AWARDED POINTS"
+	},
 	"PointsEasy": {
 		"type": "slider",
 		"label": "Easy Difficulty",
