@@ -10,6 +10,7 @@ import os
 import re
 import random
 from random import randrange
+from random import randint
 from random import seed
 import datetime
 import glob
@@ -116,12 +117,14 @@ class TriviaQuestion(object):
 
                 # Shouldn't shift if question type is boolean. it should be [true,false]
                 if self.type == "boolean":
+                    Logger.debug("BOOLEAN")
                     if self.correct_answer == "True":
                         position = 0
                     else:
                         position = 1
                 else:
-                    position = randrange(0, numberOfAnswers + 1)
+                    # this is 6 because if it is the number of items, it never chooses higher than 1.
+                    position = randint(0, 6)
                 self.correct_index = position
                 Logger.debug("Correct: " + str(self.correct_index))
                 Logger.debug("Correct: " + str(self.correct_answer))
