@@ -15,7 +15,9 @@
 			"Regular",
 			"Subscriber",
 			"VIP",
-			"Moderator"
+			"Moderator",
+			"Editor",
+			"Broadcaster"
 		],
 		"label": "Start Trivia Permission",
 		"tooltip": "Set the permission level for the trigger command",
@@ -46,7 +48,9 @@
 			"Regular",
 			"Subscriber",
 			"VIP",
-			"Moderator"
+			"Moderator",
+			"Editor",
+			"Broadcaster"
 		],
 		"label": "Answer Trivia Permission",
 		"tooltip": "Set the permission level to answer the trivia",
