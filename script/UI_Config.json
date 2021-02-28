@@ -83,6 +83,16 @@
 		"tooltip": "The time between trivia if no one triggers it.",
 		"group": "COMMANDS"
 	},
+	"AutoTriviaChatLines": {
+		"type": "slider",
+		"value": 0,
+		"min": 0,
+		"max": 1000,
+		"ticks": 1,
+		"label": "Auto Trivia Minimum Chat Lines",
+		"tooltip": "If this number of lines have not happened in chat in the duration, it will not auto trigger.",
+		"group": "COMMANDS"
+	},
 	"OpenOverlayInBrowser": {
 		"type": "button",
 		"label": "OPEN OVERLAY IN BROWSER",

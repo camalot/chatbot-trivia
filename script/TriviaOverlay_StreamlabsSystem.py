@@ -52,7 +52,7 @@ CorrectlyAnswered = list([])
 RunningThread = None
 Logger = None
 LastTickTime = None
-
+CurrentChatLineCount = 0
 
 API_URL = "https://opentdb.com/api.php?amount=1&category={0}&difficulty={1}&type={2}"
 POSSIBLE_ANSWERS = [ "a", "b", "c", "d" ]
@@ -264,6 +264,7 @@ def Execute(data):
     # if ScriptSettings.OnlyWhenLive and not Parent.IsLive():
     #     return
     if data.IsChatMessage():
+        CurrentChatLineCount += 1
         commandTrigger = data.GetParam(0).lower()
 
         # handle letter commands
@@ -340,15 +341,18 @@ def Execute(data):
 def Tick():
     global LastTickTime
     global CurrentQuestionEndTickTime
+    global CurrentChatLineCount
+
     if ScriptSettings.EnableAutoTrivia:
         if LastTickTime is None:
             # if last tick time was not ever set, lets make sure it was set.
             LastTickTime = time.time()
         intervalSeconds = ScriptSettings.AutoTriviaInterval * 60
-        if time.time() - LastTickTime >= intervalSeconds:
+        if time.time() - LastTickTime >= intervalSeconds and CurrentChatLineCount >= ScriptSettings.AutoTriviaChatLines:
             Logger.debug("Start Auto Question")
             TriggerQuestion()
             LastTickTime = time.time()
+            CurrentChatLineCount = 0
     if CurrentQuestionEndTickTime and time.time() >= CurrentQuestionEndTickTime:
         #threading.Thread(target=QuestionTimeoutThread, args=(ScriptSettings.TimeToAnswer, ScriptSettings.TimeoutResponse)).start()
         QuestionTimeout()

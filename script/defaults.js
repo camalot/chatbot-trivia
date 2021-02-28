@@ -7,6 +7,7 @@ var DEFAULT_SETTINGS = {
   "TimeToAnswer": 60,
   "EnableAutoTrivia": false,
   "AutoTriviaInterval": 60,
+  "AutoTriviaChatLines": 0,
   "QuestionResponse": "::TRIVIA QUESTION:: CATEGORY: $triviacategory :: DIFFICULTY: $triviadifficulty :: POINTS: $triviapoints\\n$triviaquestion :: $triviaanswers Use $triviaanswercommand \u03b1 to answer.",
   "CorrectResponse": "@$username -> You got the correct answer: '$triviacorrect' and have been awarded $triviapoints $currencyname.",
   "ClearResponse": "@$username -> You have cleared the current trivia question. The correct answer was '$triviacorrect'.",
