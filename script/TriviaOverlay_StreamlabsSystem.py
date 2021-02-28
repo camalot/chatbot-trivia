@@ -261,6 +261,7 @@ def Unload():
 
 def Execute(data):
     global AnsweredCorrect
+    global CurrentChatLineCount
     # if ScriptSettings.OnlyWhenLive and not Parent.IsLive():
     #     return
     if data.IsChatMessage():
