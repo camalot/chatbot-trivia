@@ -147,7 +147,7 @@
 		"type": "textbox",
 		"label": "Incorrect Response",
 		"value": "@$username -> That is not the correct answer.",
-		"tooltip": "Message to send when a user guesses incorrectly.",
+		"tooltip": "Message to send when a user guesses incorrectly. You can use $triviapointsloss to show amount.",
 		"group": "RESPONSES"
 	},
 	"TimeoutResponse": {
@@ -239,7 +239,7 @@
 	},
 	"PointsEasy": {
 		"type": "slider",
-		"label": "Easy Difficulty",
+		"label": "Easy Correct Points Gained",
 		"value": 100,
 		"min": 0,
 		"max": 10000,
@@ -247,14 +247,34 @@
 		"tooltip": "The Number of points to award to the user for a easy difficulty question.",
 		"group": "AWARDED POINTS"
 	},
+	"PointsLossEasy": {
+		"type": "slider",
+		"label": "Easy Incorrect Point Loss",
+		"value": 100,
+		"min": 0,
+		"max": 10000,
+		"ticks": 1,
+		"tooltip": "The Number of points to remove to the user for a easy difficulty question.",
+		"group": "AWARDED POINTS"
+	},
 	"PointsMedium": {
 		"type": "slider",
-		"label": "Medium Difficulty",
+		"label": "Medium Incorrect Point Loss",
 		"value": 250,
 		"min": 0,
 		"max": 10000,
 		"ticks": 1,
 		"tooltip": "The Number of points to award to the user for a medium difficulty question.",
+		"group": "AWARDED POINTS"
+	},
+	"PointsLossMedium": {
+		"type": "slider",
+		"label": "Medium Incorrect Point Loss",
+		"value": 250,
+		"min": 0,
+		"max": 10000,
+		"ticks": 1,
+		"tooltip": "The Number of points to remove to the user for a medium difficulty question.",
 		"group": "AWARDED POINTS"
 	},
 	"PointsHard": {
@@ -265,6 +285,16 @@
 		"max": 10000,
 		"ticks": 1,
 		"tooltip": "The Number of points to award to the user for a hard difficulty question.",
+		"group": "AWARDED POINTS"
+	},
+	"PointsLossHard": {
+		"type": "slider",
+		"label": "Hard Incorrect Point Loss",
+		"value": 500,
+		"min": 0,
+		"max": 10000,
+		"ticks": 1,
+		"tooltip": "The Number of points to remove to the user for a hard difficulty question.",
 		"group": "AWARDED POINTS"
 	},
 	"TriviaCommandColor": {

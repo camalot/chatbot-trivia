@@ -131,6 +131,7 @@ class TriviaQuestion(object):
                 Logger.debug("answers: " + json.dumps(self.answers))
                 self.answers.insert(position, self.correct_answer)
                 self.points = GetPointsForDifficulty(self.difficulty)
+                self.pointsLoss = GetPointsLossForDifficulty(self.difficulty)
                 Logger.debug("answers: " + json.dumps(self.answers))
             else:
                 raise Exception("Unable to load trivia question.")
@@ -328,7 +329,7 @@ def Execute(data):
                             # SendQuestionClearEvent()
                         else:
                             if (ScriptSettings.DeductPoints):
-                                Parent.RemovePoints(data.User, data.UserName, CurrentQuestion.points)
+                                Parent.RemovePoints(data.User, data.UserName, CurrentQuestion.pointsLoss)
                             Parent.SendTwitchMessage(Parse(ScriptSettings.IncorrectResponse, data.User, data.UserName, "", data.Message))
                 else:
                     Parent.SendTwitchMessage(Parse(ScriptSettings.UnknownAnswerResponse, data.User, data.UserName, "", data.Message))
@@ -380,6 +381,8 @@ def Parse(parseString, userid, username, target, message):
 
     resultString = resultString.replace("$triviapoints", str(
         GetPointsForDifficulty(CurrentQuestion.difficulty)))
+    resultString = resultString.replace("$triviapointsloss", str(
+        GetPointsLossForDifficulty(CurrentQuestion.difficulty)))
 
     resultString = resultString.replace(
         "$triviaanswercommand", ScriptSettings.AnswerCommand)
@@ -453,7 +456,15 @@ def GetPointsForDifficulty(difficulty):
         return ScriptSettings.PointsEasy
     else:
         return 0
-
+def GetPointsLossForDifficulty(difficulty):
+    if difficulty == "hard":
+        return ScriptSettings.PointsLossHard
+    elif difficulty == "medium":
+        return ScriptSettings.PointsLossMedium
+    elif difficulty == "easy":
+        return ScriptSettings.PointsLossEasy
+    else:
+        return 0
 def GetChatFormattedAnswers(answers):
     fmt = ""
     for x in range(0, len(answers)):
