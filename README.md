@@ -1,4 +1,5 @@
 # CHATBOT TRIVIA OVERLAY
+[![Trivia Overlay](https://github.com/camalot/chatbot-trivia/actions/workflows/build.yml/badge.svg)](https://github.com/camalot/chatbot-trivia/actions/workflows/build.yml)
 
 Creates a trivia overlay and in chat to interact with chat.
 
@@ -13,7 +14,7 @@ Creates a trivia overlay and in chat to interact with chat.
 
 ## INSTALL
 
-- Download the latest zip file from [Releases](https://github.com/camalot/chatbot-commandfunctions/releases/latest)
+- Download the latest zip file from [Releases](https://github.com/camalot/chatbot-trivia/releases/latest)
 - Right-click on the downloaded zip file and choose `Properties`
 - Click on `Unblock`  
 [![](https://i.imgur.com/vehSSn7l.png)](https://i.imgur.com/vehSSn7.png)  
@@ -21,7 +22,7 @@ Creates a trivia overlay and in chat to interact with chat.
 - In Chatbot, Click on the import icon on the scripts tab.  
   ![](https://i.imgur.com/16JjCvR.png)
 - Select the downloaded zip file
-- Right click on `Twitch Team` row and select `Insert API Key`. Click yes on the dialog.  
+- Right click on `Trivia Overlay` row and select `Insert API Key`. Click yes on the dialog.  
 [![](https://i.imgur.com/AWmtHKFl.png)](https://i.imgur.com/AWmtHKF.png)  
 
 ## CONFIGURATION
